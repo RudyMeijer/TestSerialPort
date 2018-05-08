@@ -1,12 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.IO.Ports;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace TestSerialPort
@@ -14,6 +8,7 @@ namespace TestSerialPort
     public partial class Form1 : Form
     {
         private SerialPort Port;
+        private bool bHexmode;
 
         public Form1()
         {
@@ -25,6 +20,7 @@ namespace TestSerialPort
         {
             cmbPort.DataSource = SerialPort.GetPortNames();
             cmbPort.SelectedIndex = 0;
+            cmbBaudrate.SelectedIndex = 1; // default 115200
         }
 
         private void btnOpen_Click(object sender, EventArgs e)
@@ -32,12 +28,23 @@ namespace TestSerialPort
 
             try
             {
-                Port = new SerialPort(portName: cmbPort.Text, baudRate: 9600, parity: Parity.None);
+                Port = new SerialPort(portName: cmbPort.Text, baudRate: int.Parse(cmbBaudrate.Text), parity: Parity.None);
                 Port.Open();
-                if (Port.IsOpen) txtReceive.Text = $"Connected to port {Port.PortName}";
+                Port.Handshake = Handshake.XOnXOff;
+                if (Port.IsOpen) txtReceive.Text = $"Connected to port {Port.PortName}        ";
                 while (Port.IsOpen)
                 {
-                    txtReceive.Text += Port.ReadExisting();
+                    var n = Port.BytesToRead;
+                    if (n > 0)
+                    {
+                        var c = (char)Port.ReadChar();
+                        var s = c.ToString();
+                        if (c <= 32 || bHexmode)
+                        {
+                            s = $"[{(int)c:X2}]";
+                        }
+                        txtReceive.Text += s;
+                    }
                     Application.DoEvents();
                 }
             }
@@ -58,6 +65,11 @@ namespace TestSerialPort
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             Port?.Close();
+        }
+
+        private void chkHexmode_CheckedChanged(object sender, EventArgs e)
+        {
+            bHexmode = chkHexmode.Checked;
         }
     }
 }
