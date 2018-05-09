@@ -45,6 +45,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CRC16_CCITT.cs" />
+    <Compile Include="eGateSimulation.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>

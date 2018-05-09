@@ -88,6 +88,7 @@
             this.txtTransmit.Location = new System.Drawing.Point(0, 206);
             this.txtTransmit.Multiline = true;
             this.txtTransmit.Name = "txtTransmit";
+            this.txtTransmit.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.txtTransmit.Size = new System.Drawing.Size(380, 138);
             this.txtTransmit.TabIndex = 4;
             this.txtTransmit.TextChanged += new System.EventHandler(this.txtTransmit_TextChanged);
