@@ -93,15 +93,16 @@ namespace ASCS.Lib.RemoteGatewayComponent.GPRS.Test
             return dataBytes;
         }
 
-        private void GenerateReturnMessage(byte[] aReceivedMsgBuffer)
+        public List<Byte> GenerateReturnMessage(byte[] aReceivedMsgBuffer)
         {
             List<Byte> responseData = DetermineResponseData(aReceivedMsgBuffer);
             List<Byte> dataBytes = GenerateDataLinkLayerFrame(aReceivedMsgBuffer, responseData);
 
-            lock (mEGateResponseCountLockObject)
-            {
-                mEGateResponseMsgBuffer.AddRange(dataBytes);
-            }
+            //lock (mEGateResponseCountLockObject)
+            //{
+            //    mEGateResponseMsgBuffer.AddRange(dataBytes);
+            //}
+            return dataBytes;
         }
 
         private List<Byte> GenerateDataLinkLayerFrame(byte[] aReceivedMsgBuffer, List<Byte> aResponseData)

@@ -3,6 +3,7 @@ using System;
 using System.IO.Ports;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace TestSerialPort
@@ -12,8 +13,10 @@ namespace TestSerialPort
         private SerialPort Port;
         private bool bHexmode;
         private eGateSimulation eGateSim;
+        //private bool blnSendRC;
+        private byte[] bytes;
         private readonly byte STX = 0x02;
-        private readonly byte ACK = 0x05;
+        //private readonly byte ACK = 0x05;
 
         public Form1()
         {
@@ -38,32 +41,35 @@ namespace TestSerialPort
                 Port.Open();
                 //Port.Handshake = Handshake.XOnXOff;
                 txtTransmit.Clear();
-                if (Port.IsOpen) txtReceive.Text = $"Connected to port {Port.PortName}        ";
+                if (Port.IsOpen) txtReceive.Text = $"Connected to port {Port.PortName}          ";
 
-                var output = new StringBuilder();
                 while (Port.IsOpen)
                 {
                     var n = Port.BytesToRead;
                     if (n > 0)
                     {
-                        byte[] bytes = Encoding.ASCII.GetBytes(Port.ReadExisting());
+                        bytes = Encoding.ASCII.GetBytes(Port.ReadExisting());
                         txtReceive.Text += Show(bytes);
 
-                        if (bytes[0] == STX && bytes.Length==9)
+                        if (bytes[0] == STX && bytes.Length>4)
                         {
-                            var list = eGateSim.GenerateAckMessage(bytes);
-                            var outp = list.ToArray();
-                            Port.Write(outp,0,outp.Length);
-                            txtTransmit.Text += Show(outp);
+                            if (bytes[4] == 0x43)
+                            {
+                                var list = eGateSim.GenerateAckMessage(bytes);
+                                var outp = list.ToArray();
+                                Port.Write(outp, 0, outp.Length);
+                                txtTransmit.Text += Show(outp);
+
+                                {
+                                    Thread.Sleep(500);
+                                    list = eGateSim.GenerateReturnMessage(bytes);
+                                    outp = list.ToArray();
+                                    Port.Write(outp, 0, outp.Length);
+                                    txtTransmit.Text += Show(outp);
+                                }
+                            }
                         }
-                        //foreach (var c in s)
-                        //{
-                        //    if (c <= 32 || bHexmode)
-                        //    {
-                        //        output.Append($"[{(int)c:X2}]");
-                        //    }
-                        //    else output.Append(c);
-                        //}
+
                     }
                     Application.DoEvents();
                 }
@@ -104,6 +110,10 @@ namespace TestSerialPort
             bHexmode = chkHexmode.Checked;
             txtReceive.Clear();
             txtTransmit.Clear();
+        }
+
+        private void btnRC_Click(object sender, EventArgs e)
+        {
         }
     }
 }
